@@ -1,0 +1,11 @@
+# Freeze line endings so committed bytes match what the browser hashes (data integrity check).
+* text=auto eol=lf
+
+# Binary assets must never be line-ending normalized.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary

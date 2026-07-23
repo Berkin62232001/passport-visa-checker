@@ -1,0 +1,34 @@
+{
+  "name": "passport-visa-checker",
+  "version": "1.0.0",
+  "description": "Interactive static passport visa requirement checker.",
+  "private": true,
+  "type": "commonjs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Berkin62232001/passport-visa-checker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Berkin62232001/passport-visa-checker/issues"
+  },
+  "scripts": {
+    "dev": "serve . --listen tcp://127.0.0.1:3000 --no-clipboard",
+    "start": "serve . --listen tcp://127.0.0.1:3000 --no-clipboard",
+    "preview": "serve . --listen tcp://127.0.0.1:3000 --no-clipboard",
+    "validate:data": "node scripts/validate-and-update-data.js",
+    "update:data": "npm run validate:data"
+  },
+  "keywords": [
+    "passport",
+    "visa",
+    "travel",
+    "static-site"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "serve": "^14.2.6"
+  }
+}

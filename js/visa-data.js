@@ -1,0 +1,428 @@
+/**
+ * Passport Visa Data — Country Info & Enrichment
+ *
+ * COUNTRY_INFO: Names and flag emojis for all countries (used by map + UI).
+ * ENRICHMENT_DATA: Hand-written tips/info/changes for select passport-destination
+ *   pairs. Merged on top of live data from passport-index-data.
+ *
+ * Live visa status + duration comes from:
+ *   https://github.com/imorte/passport-index-data (MIT license)
+ *   Fetched at runtime by visa-data-loader.js
+ */
+
+// Country name to ISO A3 mapping + flag emojis
+const COUNTRY_INFO = {
+    AFG: { name: "Afghanistan", flag: "\u{1F1E6}\u{1F1EB}" },
+    ALB: { name: "Albania", flag: "\u{1F1E6}\u{1F1F1}" },
+    DZA: { name: "Algeria", flag: "\u{1F1E9}\u{1F1FF}" },
+    AND: { name: "Andorra", flag: "\u{1F1E6}\u{1F1E9}" },
+    AGO: { name: "Angola", flag: "\u{1F1E6}\u{1F1F4}" },
+    ATG: { name: "Antigua and Barbuda", flag: "\u{1F1E6}\u{1F1EC}" },
+    ARG: { name: "Argentina", flag: "\u{1F1E6}\u{1F1F7}" },
+    ARM: { name: "Armenia", flag: "\u{1F1E6}\u{1F1F2}" },
+    AUS: { name: "Australia", flag: "\u{1F1E6}\u{1F1FA}" },
+    AUT: { name: "Austria", flag: "\u{1F1E6}\u{1F1F9}" },
+    AZE: { name: "Azerbaijan", flag: "\u{1F1E6}\u{1F1FF}" },
+    BHS: { name: "Bahamas", flag: "\u{1F1E7}\u{1F1F8}" },
+    BHR: { name: "Bahrain", flag: "\u{1F1E7}\u{1F1ED}" },
+    BGD: { name: "Bangladesh", flag: "\u{1F1E7}\u{1F1E9}" },
+    BRB: { name: "Barbados", flag: "\u{1F1E7}\u{1F1E7}" },
+    BLR: { name: "Belarus", flag: "\u{1F1E7}\u{1F1FE}" },
+    BEL: { name: "Belgium", flag: "\u{1F1E7}\u{1F1EA}" },
+    BLZ: { name: "Belize", flag: "\u{1F1E7}\u{1F1FF}" },
+    BEN: { name: "Benin", flag: "\u{1F1E7}\u{1F1EF}" },
+    BTN: { name: "Bhutan", flag: "\u{1F1E7}\u{1F1F9}" },
+    BOL: { name: "Bolivia", flag: "\u{1F1E7}\u{1F1F4}" },
+    BIH: { name: "Bosnia and Herzegovina", flag: "\u{1F1E7}\u{1F1E6}" },
+    BWA: { name: "Botswana", flag: "\u{1F1E7}\u{1F1FC}" },
+    BRA: { name: "Brazil", flag: "\u{1F1E7}\u{1F1F7}" },
+    BRN: { name: "Brunei", flag: "\u{1F1E7}\u{1F1F3}" },
+    BGR: { name: "Bulgaria", flag: "\u{1F1E7}\u{1F1EC}" },
+    BFA: { name: "Burkina Faso", flag: "\u{1F1E7}\u{1F1EB}" },
+    BDI: { name: "Burundi", flag: "\u{1F1E7}\u{1F1EE}" },
+    KHM: { name: "Cambodia", flag: "\u{1F1F0}\u{1F1ED}" },
+    CMR: { name: "Cameroon", flag: "\u{1F1E8}\u{1F1F2}" },
+    CAN: { name: "Canada", flag: "\u{1F1E8}\u{1F1E6}" },
+    CPV: { name: "Cape Verde", flag: "\u{1F1E8}\u{1F1FB}" },
+    CAF: { name: "Central African Republic", flag: "\u{1F1E8}\u{1F1EB}" },
+    TCD: { name: "Chad", flag: "\u{1F1F9}\u{1F1E9}" },
+    CHL: { name: "Chile", flag: "\u{1F1E8}\u{1F1F1}" },
+    CHN: { name: "China", flag: "\u{1F1E8}\u{1F1F3}" },
+    COL: { name: "Colombia", flag: "\u{1F1E8}\u{1F1F4}" },
+    COM: { name: "Comoros", flag: "\u{1F1E8}\u{1F1F2}" },
+    COG: { name: "Congo", flag: "\u{1F1E8}\u{1F1EC}" },
+    COD: { name: "DR Congo", flag: "\u{1F1E8}\u{1F1E9}" },
+    CRI: { name: "Costa Rica", flag: "\u{1F1E8}\u{1F1F7}" },
+    CIV: { name: "Ivory Coast", flag: "\u{1F1E8}\u{1F1EE}" },
+    HRV: { name: "Croatia", flag: "\u{1F1ED}\u{1F1F7}" },
+    CUB: { name: "Cuba", flag: "\u{1F1E8}\u{1F1FA}" },
+    CYP: { name: "Cyprus", flag: "\u{1F1E8}\u{1F1FE}" },
+    CZE: { name: "Czech Republic", flag: "\u{1F1E8}\u{1F1FF}" },
+    DNK: { name: "Denmark", flag: "\u{1F1E9}\u{1F1F0}" },
+    DJI: { name: "Djibouti", flag: "\u{1F1E9}\u{1F1EF}" },
+    DMA: { name: "Dominica", flag: "\u{1F1E9}\u{1F1F2}" },
+    DOM: { name: "Dominican Republic", flag: "\u{1F1E9}\u{1F1F4}" },
+    ECU: { name: "Ecuador", flag: "\u{1F1EA}\u{1F1E8}" },
+    EGY: { name: "Egypt", flag: "\u{1F1EA}\u{1F1EC}" },
+    SLV: { name: "El Salvador", flag: "\u{1F1F8}\u{1F1FB}" },
+    GNQ: { name: "Equatorial Guinea", flag: "\u{1F1EC}\u{1F1F6}" },
+    ERI: { name: "Eritrea", flag: "\u{1F1EA}\u{1F1F7}" },
+    EST: { name: "Estonia", flag: "\u{1F1EA}\u{1F1EA}" },
+    SWZ: { name: "Eswatini", flag: "\u{1F1F8}\u{1F1FF}" },
+    ETH: { name: "Ethiopia", flag: "\u{1F1EA}\u{1F1F9}" },
+    FJI: { name: "Fiji", flag: "\u{1F1EB}\u{1F1EF}" },
+    FIN: { name: "Finland", flag: "\u{1F1EB}\u{1F1EE}" },
+    FRA: { name: "France", flag: "\u{1F1EB}\u{1F1F7}" },
+    FSM: { name: "Micronesia", flag: "\u{1F1EB}\u{1F1F2}" },
+    GAB: { name: "Gabon", flag: "\u{1F1EC}\u{1F1E6}" },
+    GMB: { name: "Gambia", flag: "\u{1F1EC}\u{1F1F2}" },
+    GEO: { name: "Georgia", flag: "\u{1F1EC}\u{1F1EA}" },
+    DEU: { name: "Germany", flag: "\u{1F1E9}\u{1F1EA}" },
+    GHA: { name: "Ghana", flag: "\u{1F1EC}\u{1F1ED}" },
+    GRC: { name: "Greece", flag: "\u{1F1EC}\u{1F1F7}" },
+    GRD: { name: "Grenada", flag: "\u{1F1EC}\u{1F1E9}" },
+    GTM: { name: "Guatemala", flag: "\u{1F1EC}\u{1F1F9}" },
+    GIN: { name: "Guinea", flag: "\u{1F1EC}\u{1F1F3}" },
+    GNB: { name: "Guinea-Bissau", flag: "\u{1F1EC}\u{1F1FC}" },
+    GUY: { name: "Guyana", flag: "\u{1F1EC}\u{1F1FE}" },
+    HTI: { name: "Haiti", flag: "\u{1F1ED}\u{1F1F9}" },
+    HKG: { name: "Hong Kong", flag: "\u{1F1ED}\u{1F1F0}" },
+    HND: { name: "Honduras", flag: "\u{1F1ED}\u{1F1F3}" },
+    HUN: { name: "Hungary", flag: "\u{1F1ED}\u{1F1FA}" },
+    ISL: { name: "Iceland", flag: "\u{1F1EE}\u{1F1F8}" },
+    IND: { name: "India", flag: "\u{1F1EE}\u{1F1F3}" },
+    IDN: { name: "Indonesia", flag: "\u{1F1EE}\u{1F1E9}" },
+    IRN: { name: "Iran", flag: "\u{1F1EE}\u{1F1F7}" },
+    IRQ: { name: "Iraq", flag: "\u{1F1EE}\u{1F1F6}" },
+    IRL: { name: "Ireland", flag: "\u{1F1EE}\u{1F1EA}" },
+    ISR: { name: "Israel", flag: "\u{1F1EE}\u{1F1F1}" },
+    ITA: { name: "Italy", flag: "\u{1F1EE}\u{1F1F9}" },
+    JAM: { name: "Jamaica", flag: "\u{1F1EF}\u{1F1F2}" },
+    JPN: { name: "Japan", flag: "\u{1F1EF}\u{1F1F5}" },
+    JOR: { name: "Jordan", flag: "\u{1F1EF}\u{1F1F4}" },
+    KAZ: { name: "Kazakhstan", flag: "\u{1F1F0}\u{1F1FF}" },
+    KEN: { name: "Kenya", flag: "\u{1F1F0}\u{1F1EA}" },
+    KIR: { name: "Kiribati", flag: "\u{1F1F0}\u{1F1EE}" },
+    PRK: { name: "North Korea", flag: "\u{1F1F0}\u{1F1F5}" },
+    KOR: { name: "South Korea", flag: "\u{1F1F0}\u{1F1F7}" },
+    XKX: { name: "Kosovo", flag: "\u{1F1FD}\u{1F1F0}" },
+    KWT: { name: "Kuwait", flag: "\u{1F1F0}\u{1F1FC}" },
+    KGZ: { name: "Kyrgyzstan", flag: "\u{1F1F0}\u{1F1EC}" },
+    LAO: { name: "Laos", flag: "\u{1F1F1}\u{1F1E6}" },
+    LVA: { name: "Latvia", flag: "\u{1F1F1}\u{1F1FB}" },
+    LBN: { name: "Lebanon", flag: "\u{1F1F1}\u{1F1E7}" },
+    LSO: { name: "Lesotho", flag: "\u{1F1F1}\u{1F1F8}" },
+    LBR: { name: "Liberia", flag: "\u{1F1F1}\u{1F1F7}" },
+    LBY: { name: "Libya", flag: "\u{1F1F1}\u{1F1FE}" },
+    LIE: { name: "Liechtenstein", flag: "\u{1F1F1}\u{1F1EE}" },
+    LTU: { name: "Lithuania", flag: "\u{1F1F1}\u{1F1F9}" },
+    LUX: { name: "Luxembourg", flag: "\u{1F1F1}\u{1F1FA}" },
+    MAC: { name: "Macau", flag: "\u{1F1F2}\u{1F1F4}" },
+    MDG: { name: "Madagascar", flag: "\u{1F1F2}\u{1F1EC}" },
+    MWI: { name: "Malawi", flag: "\u{1F1F2}\u{1F1FC}" },
+    MYS: { name: "Malaysia", flag: "\u{1F1F2}\u{1F1FE}" },
+    MDV: { name: "Maldives", flag: "\u{1F1F2}\u{1F1FB}" },
+    MLI: { name: "Mali", flag: "\u{1F1F2}\u{1F1F1}" },
+    MLT: { name: "Malta", flag: "\u{1F1F2}\u{1F1F9}" },
+    MHL: { name: "Marshall Islands", flag: "\u{1F1F2}\u{1F1ED}" },
+    MRT: { name: "Mauritania", flag: "\u{1F1F2}\u{1F1F7}" },
+    MUS: { name: "Mauritius", flag: "\u{1F1F2}\u{1F1FA}" },
+    MEX: { name: "Mexico", flag: "\u{1F1F2}\u{1F1FD}" },
+    MDA: { name: "Moldova", flag: "\u{1F1F2}\u{1F1E9}" },
+    MCO: { name: "Monaco", flag: "\u{1F1F2}\u{1F1E8}" },
+    MNG: { name: "Mongolia", flag: "\u{1F1F2}\u{1F1F3}" },
+    MNE: { name: "Montenegro", flag: "\u{1F1F2}\u{1F1EA}" },
+    MAR: { name: "Morocco", flag: "\u{1F1F2}\u{1F1E6}" },
+    MOZ: { name: "Mozambique", flag: "\u{1F1F2}\u{1F1FF}" },
+    MMR: { name: "Myanmar", flag: "\u{1F1F2}\u{1F1F2}" },
+    NAM: { name: "Namibia", flag: "\u{1F1F3}\u{1F1E6}" },
+    NRU: { name: "Nauru", flag: "\u{1F1F3}\u{1F1F7}" },
+    NPL: { name: "Nepal", flag: "\u{1F1F3}\u{1F1F5}" },
+    NLD: { name: "Netherlands", flag: "\u{1F1F3}\u{1F1F1}" },
+    NZL: { name: "New Zealand", flag: "\u{1F1F3}\u{1F1FF}" },
+    NIC: { name: "Nicaragua", flag: "\u{1F1F3}\u{1F1EE}" },
+    NER: { name: "Niger", flag: "\u{1F1F3}\u{1F1EA}" },
+    NGA: { name: "Nigeria", flag: "\u{1F1F3}\u{1F1EC}" },
+    MKD: { name: "North Macedonia", flag: "\u{1F1F2}\u{1F1F0}" },
+    NOR: { name: "Norway", flag: "\u{1F1F3}\u{1F1F4}" },
+    OMN: { name: "Oman", flag: "\u{1F1F4}\u{1F1F2}" },
+    PAK: { name: "Pakistan", flag: "\u{1F1F5}\u{1F1F0}" },
+    PLW: { name: "Palau", flag: "\u{1F1F5}\u{1F1FC}" },
+    PSE: { name: "Palestine", flag: "\u{1F1F5}\u{1F1F8}" },
+    PAN: { name: "Panama", flag: "\u{1F1F5}\u{1F1E6}" },
+    PNG: { name: "Papua New Guinea", flag: "\u{1F1F5}\u{1F1EC}" },
+    PRY: { name: "Paraguay", flag: "\u{1F1F5}\u{1F1FE}" },
+    PER: { name: "Peru", flag: "\u{1F1F5}\u{1F1EA}" },
+    PHL: { name: "Philippines", flag: "\u{1F1F5}\u{1F1ED}" },
+    POL: { name: "Poland", flag: "\u{1F1F5}\u{1F1F1}" },
+    PRT: { name: "Portugal", flag: "\u{1F1F5}\u{1F1F9}" },
+    QAT: { name: "Qatar", flag: "\u{1F1F6}\u{1F1E6}" },
+    ROU: { name: "Romania", flag: "\u{1F1F7}\u{1F1F4}" },
+    RUS: { name: "Russia", flag: "\u{1F1F7}\u{1F1FA}" },
+    RWA: { name: "Rwanda", flag: "\u{1F1F7}\u{1F1FC}" },
+    KNA: { name: "Saint Kitts and Nevis", flag: "\u{1F1F0}\u{1F1F3}" },
+    LCA: { name: "Saint Lucia", flag: "\u{1F1F1}\u{1F1E8}" },
+    VCT: { name: "Saint Vincent and the Grenadines", flag: "\u{1F1FB}\u{1F1E8}" },
+    WSM: { name: "Samoa", flag: "\u{1F1FC}\u{1F1F8}" },
+    SMR: { name: "San Marino", flag: "\u{1F1F8}\u{1F1F2}" },
+    STP: { name: "São Tomé and Príncipe", flag: "\u{1F1F8}\u{1F1F9}" },
+    SAU: { name: "Saudi Arabia", flag: "\u{1F1F8}\u{1F1E6}" },
+    SEN: { name: "Senegal", flag: "\u{1F1F8}\u{1F1F3}" },
+    SRB: { name: "Serbia", flag: "\u{1F1F7}\u{1F1F8}" },
+    SYC: { name: "Seychelles", flag: "\u{1F1F8}\u{1F1E8}" },
+    SLE: { name: "Sierra Leone", flag: "\u{1F1F8}\u{1F1F1}" },
+    SGP: { name: "Singapore", flag: "\u{1F1F8}\u{1F1EC}" },
+    SVK: { name: "Slovakia", flag: "\u{1F1F8}\u{1F1F0}" },
+    SVN: { name: "Slovenia", flag: "\u{1F1F8}\u{1F1EE}" },
+    SLB: { name: "Solomon Islands", flag: "\u{1F1F8}\u{1F1E7}" },
+    SOM: { name: "Somalia", flag: "\u{1F1F8}\u{1F1F4}" },
+    ZAF: { name: "South Africa", flag: "\u{1F1FF}\u{1F1E6}" },
+    SSD: { name: "South Sudan", flag: "\u{1F1F8}\u{1F1F8}" },
+    ESP: { name: "Spain", flag: "\u{1F1EA}\u{1F1F8}" },
+    LKA: { name: "Sri Lanka", flag: "\u{1F1F1}\u{1F1F0}" },
+    SDN: { name: "Sudan", flag: "\u{1F1F8}\u{1F1E9}" },
+    SUR: { name: "Suriname", flag: "\u{1F1F8}\u{1F1F7}" },
+    SWE: { name: "Sweden", flag: "\u{1F1F8}\u{1F1EA}" },
+    CHE: { name: "Switzerland", flag: "\u{1F1E8}\u{1F1ED}" },
+    SYR: { name: "Syria", flag: "\u{1F1F8}\u{1F1FE}" },
+    TWN: { name: "Taiwan", flag: "\u{1F1F9}\u{1F1FC}" },
+    TJK: { name: "Tajikistan", flag: "\u{1F1F9}\u{1F1EF}" },
+    TZA: { name: "Tanzania", flag: "\u{1F1F9}\u{1F1FF}" },
+    THA: { name: "Thailand", flag: "\u{1F1F9}\u{1F1ED}" },
+    TLS: { name: "Timor-Leste", flag: "\u{1F1F9}\u{1F1F1}" },
+    TGO: { name: "Togo", flag: "\u{1F1F9}\u{1F1EC}" },
+    TON: { name: "Tonga", flag: "\u{1F1F9}\u{1F1F4}" },
+    TTO: { name: "Trinidad and Tobago", flag: "\u{1F1F9}\u{1F1F9}" },
+    TUN: { name: "Tunisia", flag: "\u{1F1F9}\u{1F1F3}" },
+    TUR: { name: "Turkey", flag: "\u{1F1F9}\u{1F1F7}" },
+    TKM: { name: "Turkmenistan", flag: "\u{1F1F9}\u{1F1F2}" },
+    TUV: { name: "Tuvalu", flag: "\u{1F1F9}\u{1F1FB}" },
+    UGA: { name: "Uganda", flag: "\u{1F1FA}\u{1F1EC}" },
+    UKR: { name: "Ukraine", flag: "\u{1F1FA}\u{1F1E6}" },
+    ARE: { name: "United Arab Emirates", flag: "\u{1F1E6}\u{1F1EA}" },
+    GBR: { name: "United Kingdom", flag: "\u{1F1EC}\u{1F1E7}" },
+    USA: { name: "United States", flag: "\u{1F1FA}\u{1F1F8}" },
+    URY: { name: "Uruguay", flag: "\u{1F1FA}\u{1F1FE}" },
+    UZB: { name: "Uzbekistan", flag: "\u{1F1FA}\u{1F1FF}" },
+    VAT: { name: "Vatican City", flag: "\u{1F1FB}\u{1F1E6}" },
+    VUT: { name: "Vanuatu", flag: "\u{1F1FB}\u{1F1FA}" },
+    VEN: { name: "Venezuela", flag: "\u{1F1FB}\u{1F1EA}" },
+    VNM: { name: "Vietnam", flag: "\u{1F1FB}\u{1F1F3}" },
+    YEM: { name: "Yemen", flag: "\u{1F1FE}\u{1F1EA}" },
+    ZMB: { name: "Zambia", flag: "\u{1F1FF}\u{1F1F2}" },
+    ZWE: { name: "Zimbabwe", flag: "\u{1F1FF}\u{1F1FC}" }
+};
+
+// =====================================================
+// Enrichment Data — curated tips/info for select routes
+// Merged on top of live passport-index-data at runtime
+// =====================================================
+const ENRICHMENT_DATA = {
+    // ----- TURKEY -----
+    TUR: {
+        AZE: { tips: "Strong cultural ties. Can enter with just Turkish ID card since 2014." },
+        BIH: { tips: "Can enter with Turkish ID card. Very popular affordable destination." },
+        GEO: { tips: "Extremely popular. Amazing food, wine, and mountains. Can enter with ID card." },
+        JPN: { tips: "One of the few high-economy visa-free destinations. Cherry blossom season is popular." },
+        KOR: { tips: "Korean War brotherhood bond. Strong cultural affection." },
+        MKD: { tips: "Can enter with Turkish ID card. Beautiful Lake Ohrid." },
+        SRB: { tips: "Can enter with Turkish ID card. Belgrade is vibrant." },
+        USA: { tips: "Apply 3-6 months in advance. Prepare for interview at the embassy." },
+        DEU: { tips: "Schengen visa required. Book appointment early — allows travel to all 27 Schengen countries." },
+        FRA: { tips: "French consulates in Istanbul and Ankara. Appointment slots fill fast." },
+        GBR: { tips: "Apply online and visit a visa application center. Processing takes ~3 weeks." },
+        EGY: { tips: "Apply at least 7 days before travel. Historical wonders await." },
+    },
+    // ----- USA -----
+    USA: {
+        GBR: { tips: "No Schengen visa needed separately for UK. Up to 6 months." },
+        JPN: { tips: "One of the safest and most fascinating countries." },
+        MEX: { tips: "FMM form required on arrival (often digital now)." },
+        CUB: { tips: "Complex rules for US citizens. Consult current OFAC guidelines." },
+        IRN: { tips: "Very limited options for US passport holders." },
+        PRK: { tips: "US citizens generally prohibited. Special validation passport required." },
+        CHN: { tips: "Check if your itinerary qualifies for transit visa exemption." },
+        IND: { tips: "Apply online at least 4 days before departure." },
+    },
+    // ----- UK -----
+    GBR: {
+        USA: { tips: "Apply for ESTA at least 72 hours before departure. Costs $21." },
+        AUS: { tips: "Apply through the Australian ETA app." },
+        NZL: { tips: "NZeTA required. Apply online before travel." },
+        TUR: { tips: "Visa-free since March 2020. No need for e-visa." },
+        IRN: { tips: "Guided tours mandatory for UK/US/Canadian citizens." },
+    },
+    // ----- GERMANY -----
+    DEU: {
+        TUR: { tips: "Large Turkish diaspora in Germany makes this a very popular route." },
+        USA: { tips: "Apply for ESTA online before travel." },
+    },
+    // ----- JAPAN -----
+    JPN: {
+        BRA: { tips: "São Paulo has the largest Japanese community outside Japan." },
+    },
+    // ----- CHINA -----
+    CHN: {
+        THA: { tips: "One of the top destinations for Chinese tourists." },
+        SGP: { tips: "Popular business and leisure destination." },
+        IDN: { tips: "Bali is very popular with Chinese tourists." },
+        USA: { tips: "10-year visas available but interview required. Long wait times." },
+    },
+    // ----- INDIA -----
+    IND: {
+        BTN: { tips: "Permit required for certain areas but no visa needed." },
+        NPL: { tips: "Open border policy. Can enter with valid ID." },
+        SAU: { tips: "Also Hajj/Umrah visas available." },
+        TUR: { tips: "Growing tourism corridor between India and Turkey." },
+    },
+    // ----- RUSSIA -----
+    RUS: {
+        TUR: { tips: "Antalya and Istanbul are top destinations for Russians." },
+        THA: { tips: "Very popular winter destination." },
+        USA: { tips: "Bilateral relations at historic low. Very few visa appointments available. May need to apply in a third country." },
+    },
+    // ----- BRAZIL -----
+    BRA: {
+        PRT: { tips: "Same language! Historic colonial ties." },
+        ITA: { tips: "Large Italian-Brazilian community. Cultural ties." },
+        JPN: { tips: "Large Japanese-Brazilian diaspora." },
+        ARG: { tips: "Mercosur agreement. ID card sufficient." },
+    },
+    // ----- SOUTH KOREA -----
+    KOR: {
+        TUR: { tips: "Korean War brotherhood. Turkish people have strong affection for Koreans." },
+        JPN: { tips: "Close neighbor with very popular travel corridor." },
+    },
+    // ----- AUSTRALIA -----
+    AUS: {
+        NZL: { tips: "Trans-Tasman agreement. Can live and work." },
+        TUR: { tips: "Gallipoli is a significant historical site for Australians." },
+    },
+    // ----- SAUDI ARABIA -----
+    SAU: {
+        ARE: { tips: "GCC agreement. ID card sufficient." },
+        BHR: { tips: "GCC agreement. ID card sufficient." },
+        KWT: { tips: "GCC agreement. ID card sufficient." },
+        OMN: { tips: "GCC agreement. ID card sufficient." },
+        QAT: { tips: "GCC agreement. Relations normalized after 2021 Al-Ula declaration." },
+        TUR: { tips: "Very popular shopping and leisure destination." },
+    },
+    // ----- EGYPT -----
+    EGY: {
+        JOR: { tips: "Close neighbor with strong bilateral ties." },
+        MAR: { tips: "Fellow Arab country with rich culture." },
+    },
+    // ----- NIGERIA -----
+    NGA: {
+        GHA: { tips: "ECOWAS free movement agreement. Close neighbor." },
+        USA: { tips: "Enhanced vetting. Prepare documentation thoroughly. Apply very early." },
+    },
+    // ----- PAKISTAN -----
+    PAK: {
+        TUR: { tips: "Apply online. May need supporting documents." },
+        SAU: { tips: "Work/Hajj visas common. Tourist e-visa may not be available." },
+    },
+    // ----- UKRAINE -----
+    UKR: {
+        DEU: { tips: "Historic visa liberalization with EU since 2017. Biometric passport required." },
+        POL: { tips: "Close neighbor with strong support. Easy border crossing." },
+        TUR: { tips: "Popular beach destination. Direct flights from many Ukrainian cities." },
+        GBR: { tips: "Check current special programs for Ukrainian refugees." },
+        CAN: { tips: "Check CUAET program for special immigration." },
+    },
+    // ----- FRANCE -----
+    FRA: {
+        USA: { tips: "ESTA required for visa-waiver travel. Apply at least 72 hours before flight." },
+        JPN: { tips: "90-day visa-free entry. Popular for cultural and food tourism." },
+        MAR: { tips: "Strong colonial-era ties. Many direct daily flights." },
+        DZA: { tips: "Visa required despite historical ties. Apply at the Algerian consulate well in advance." },
+        IND: { tips: "Apply for the Indian e-Tourist visa online — usually approved within 72 hours." },
+    },
+    // ----- ITALY -----
+    ITA: {
+        USA: { tips: "ESTA needed. Be ready for biometrics on arrival." },
+        ARG: { tips: "Large Italian-Argentine diaspora — easy to dual-cite ancestry." },
+        BRA: { tips: "Same — São Paulo has the largest Italian community outside Italy." },
+        EGY: { tips: "E-visa available online. Bring a printed copy." },
+    },
+    // ----- SPAIN -----
+    ESP: {
+        MEX: { tips: "180-day visa-free entry. Strong cultural and language ties." },
+        CUB: { tips: "Tourist card (tarjeta) required — buy at the airport or online." },
+        ARG: { tips: "Big Spanish-Argentine population. Many dual citizens." },
+        USA: { tips: "ESTA via Visa Waiver Program. Valid 2 years." },
+    },
+    // ----- NETHERLANDS -----
+    NLD: {
+        USA: { tips: "ESTA required. Pre-clearance at Schiphol for some US flights." },
+        IDN: { tips: "Historic ties; visa on arrival or e-VOA available for Dutch passports." },
+        SUR: { tips: "Shared language and history; tourist card needed for short stays." },
+    },
+    // ----- CANADA -----
+    CAN: {
+        USA: { tips: "Cross with passport — NEXUS speeds it up substantially." },
+        MEX: { tips: "Visa-free up to 180 days. FMM tourist form required (often digital)." },
+        CUB: { tips: "Very popular winter destination. Tourist card included with most package tours." },
+        GBR: { tips: "Visa-free up to 6 months. ETA may be required for air travel." },
+    },
+    // ----- MEXICO -----
+    MEX: {
+        USA: { tips: "B1/B2 visa required for most. 10-year multiple-entry common." },
+        CAN: { tips: "ETA required. Apply online; usually approved instantly." },
+        JPN: { tips: "Visa-free up to 90 days under bilateral agreement." },
+        ESP: { tips: "Schengen visa via Spanish consulate. Spanish ancestry can speed up." },
+    },
+    // ----- ARGENTINA -----
+    ARG: {
+        BRA: { tips: "Mercosur — national ID card sufficient, no passport needed." },
+        ESP: { tips: "Large Argentine community. Many qualify for Spanish citizenship by descent." },
+        USA: { tips: "B1/B2 visa interview required at the US embassy in Buenos Aires." },
+        CHL: { tips: "Open border crossings. Popular weekend trip." },
+    },
+    // ----- SINGAPORE -----
+    SGP: {
+        USA: { tips: "Visa Waiver Program eligible — ESTA online." },
+        CHN: { tips: "30-day visa-free entry to mainland China since 2024." },
+        JPN: { tips: "Visa-free up to 90 days." },
+        MYS: { tips: "Causeway crossing — bring patience during peak hours." },
+    },
+    // ----- UAE -----
+    ARE: {
+        SAU: { tips: "GCC member — ID card sufficient for travel." },
+        GBR: { tips: "Visa-free up to 6 months. Popular for shopping and Premier League trips." },
+        USA: { tips: "B1/B2 visa interview required. Apply 2-3 months in advance." },
+        THA: { tips: "Very popular leisure destination. 30-day visa exempt entry." },
+    },
+    // ----- SWITZERLAND -----
+    CHE: {
+        USA: { tips: "ESTA required. Direct flights from Zurich and Geneva." },
+        CHN: { tips: "Multi-entry tourist visa typically straightforward." },
+        JPN: { tips: "Visa-free 90 days. Popular for skiing and cherry-blossom trips." },
+    },
+    // ----- MALAYSIA -----
+    MYS: {
+        SGP: { tips: "Daily commuter route. Causeway or Second Link." },
+        IDN: { tips: "Same language family; very popular travel corridor." },
+        SAU: { tips: "Visa-free for Umrah/Hajj season often eased." },
+    },
+    // ----- INDONESIA -----
+    IDN: {
+        SAU: { tips: "Hajj/Umrah is the dominant route. Special visa categories." },
+        MYS: { tips: "ASEAN free-movement; ID often sufficient for short stays." },
+        AUS: { tips: "ETA required. Apply via the Australian ETA app." },
+        THA: { tips: "ASEAN partner — visa-free up to 30 days." },
+    },
+    // ----- THAILAND -----
+    THA: {
+        JPN: { tips: "Visa-free up to 15 days for tourism." },
+        KOR: { tips: "Popular shopping destination — K-ETA may be required." },
+        SGP: { tips: "ASEAN partner — visa-free entry up to 30 days." },
+    },
+    // ----- PHILIPPINES -----
+    PHL: {
+        USA: { tips: "B1/B2 visa typically required. Long-standing migration ties." },
+        SAU: { tips: "Major work-visa destination for Filipino OFWs." },
+        ARE: { tips: "Visa on arrival for Filipino tourists; large diaspora workforce." },
+        HKG: { tips: "Visa-free up to 14 days. Popular weekend destination." },
+    }
+};
