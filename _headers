@@ -1,0 +1,9 @@
+# Netlify security headers — applied to every path.
+# CSP mirrors the <meta> tag in index.html, plus frame-ancestors
+# (clickjacking protection), which browsers ignore in <meta> CSP.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://unpkg.com/leaflet@1.9.4/dist/leaflet.js; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://unpkg.com/leaflet@1.9.4/dist/leaflet.css https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org; connect-src 'self' https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/; object-src 'none'; manifest-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()

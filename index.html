@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passport Visa Checker — Worldwide Visa Requirements</title>
+    <meta name="description" content="Check visa requirements for 199 passports worldwide. Interactive map showing visa-free, e-visa, and visa-required destinations.">
+    <meta name="theme-color" content="#0F0D0A">
+
+    <!-- Favicon + PWA / Apple icons -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="manifest" href="site.webmanifest">
+
+    <!-- Canonical URL — replace YOUR-DOMAIN with the live host before deploy -->
+    <link rel="canonical" href="https://YOUR-DOMAIN/">
+
+    <!-- Open Graph — replace YOUR-DOMAIN with the live host before deploy -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Passport Visa Checker — Worldwide Visa Requirements">
+    <meta property="og:description" content="Interactive world map showing visa-free, e-visa, and visa-required destinations for 199 passport countries.">
+    <meta property="og:site_name" content="Passport & Atlas">
+    <meta property="og:url" content="https://YOUR-DOMAIN/">
+    <meta property="og:image" content="https://YOUR-DOMAIN/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Passport & Atlas — visa requirements for 199 passports on one map">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Passport Visa Checker">
+    <meta name="twitter:description" content="Interactive world map showing visa requirements for 199 passport countries.">
+    <meta name="twitter:image" content="https://YOUR-DOMAIN/og-image.png">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <!-- CSP: pin external sources to the exact files used.
+         Mirrored in _headers (Netlify), which also carries frame-ancestors —
+         that directive is ignored when delivered via <meta>. -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://unpkg.com/leaflet@1.9.4/dist/leaflet.js;
+        style-src 'self' 'unsafe-inline' https://unpkg.com/leaflet@1.9.4/dist/leaflet.css https://fonts.googleapis.com;
+        font-src https://fonts.gstatic.com;
+        img-src 'self' data: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org;
+        connect-src 'self' https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+    ">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin="anonymous" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://a.basemaps.cartocdn.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="is-initial">
+    <noscript>
+        <div class="noscript-fallback">
+            <h1>JavaScript Required</h1>
+            <p>Passport &amp; Atlas is an interactive world map that needs JavaScript to render.
+            Please enable it in your browser and refresh the page.</p>
+        </div>
+    </noscript>
+
+    <!-- Header -->
+    <header id="header">
+        <div class="header-left"></div>
+        <h1>Passport<span class="ampersand">&amp;</span>Atlas</h1>
+        <div class="header-right">
+            <div class="passport-selector header-passport-selector">
+                <label for="passport-search">Passport</label>
+                <div class="select-wrapper">
+                    <input type="text"
+                           id="passport-search"
+                           class="passport-search-input"
+                           data-passport-search
+                           placeholder="Search country…"
+                           autocomplete="off"
+                           autocapitalize="off"
+                           spellcheck="false"
+                           role="combobox"
+                           aria-expanded="false"
+                           aria-controls="passport-dropdown"
+                           aria-autocomplete="list"
+                           aria-haspopup="listbox"
+                           aria-label="Search and select your passport country">
+                    <div id="passport-dropdown" class="dropdown-list" data-passport-dropdown role="listbox" aria-label="Passport countries"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Destination Search -->
+    <div id="dest-search-wrapper" class="hidden">
+        <input type="text"
+               id="dest-search"
+               placeholder="Search destination..."
+               autocomplete="off"
+               autocapitalize="off"
+               spellcheck="false"
+               role="combobox"
+               aria-expanded="false"
+               aria-controls="dest-dropdown"
+               aria-autocomplete="list"
+               aria-haspopup="listbox"
+               aria-label="Search for a destination country">
+        <div id="dest-dropdown" class="dropdown-list" role="listbox" aria-label="Destination countries"></div>
+    </div>
+
+    <!-- Map Container -->
+    <div id="map" role="region" aria-label="Interactive world map showing visa requirements"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="hidden" aria-live="polite">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <span>Loading visa data...</span>
+        </div>
+    </div>
+
+    <!-- Error Recovery -->
+    <div id="error-recovery" class="hidden" role="alertdialog" aria-modal="true" aria-labelledby="error-recovery-msg">
+        <p id="error-recovery-msg">Failed to load visa data.</p>
+        <button id="retry-btn">Retry</button>
+    </div>
+
+    <!-- Staleness Warning Banner -->
+    <div id="staleness-banner" class="hidden" role="alert">
+        <span class="staleness-icon">&#9888;</span>
+        <span id="staleness-text"></span>
+    </div>
+
+    <!-- Legend -->
+    <div id="legend" role="complementary" aria-label="Map legend">
+        <h3>Visa Requirements</h3>
+        <div class="legend-item">
+            <span class="legend-color legend-visa-free"></span>
+            <span>Visa Free</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color legend-evisa"></span>
+            <span>E-Visa / Visa on Arrival</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color legend-visa-required"></span>
+            <span>Visa Required</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color legend-home"></span>
+            <span>Your Country</span>
+        </div>
+    </div>
+
+    <!-- Stats Bar -->
+    <div id="stats-bar" role="status" aria-live="polite" aria-label="Visa statistics">
+        <div class="stat" id="stat-free">
+            <span class="stat-num">0</span>
+            <span class="stat-label">Visa Free</span>
+        </div>
+        <div class="stat" id="stat-evisa">
+            <span class="stat-num">0</span>
+            <span class="stat-label">E-Visa / VOA</span>
+        </div>
+        <div class="stat" id="stat-required">
+            <span class="stat-num">0</span>
+            <span class="stat-label">Visa Required</span>
+        </div>
+    </div>
+
+    <!-- Country Info Panel -->
+    <div id="info-panel" class="hidden" role="dialog" aria-modal="true" aria-labelledby="panel-country" tabindex="-1">
+        <button id="close-panel" aria-label="Close panel">&times;</button>
+        <div id="panel-content">
+            <div id="panel-header">
+                <span id="panel-flag"></span>
+                <h2 id="panel-country"></h2>
+            </div>
+            <div id="panel-status-badge"></div>
+            <div id="panel-facts" class="panel-facts hidden" aria-label="Country facts"></div>
+            <div id="panel-stats" class="panel-stats hidden" aria-label="Practical visa info"></div>
+            <div id="panel-details"></div>
+            <div id="panel-documents" class="hidden">
+                <h3>Required Documents</h3>
+                <ul id="panel-documents-list"></ul>
+            </div>
+            <div id="panel-changes">
+                <h3>Recent Visa Changes</h3>
+                <p id="panel-changes-text"></p>
+            </div>
+            <div id="panel-tips">
+                <h3>Travel Notes</h3>
+                <p id="panel-tips-text"></p>
+            </div>
+            <div id="panel-ornament" aria-hidden="true">— &#10022; —</div>
+        </div>
+    </div>
+
+    <!-- Overlay for initial state -->
+    <div id="welcome-overlay">
+        <div class="welcome-content">
+            <span class="welcome-eyebrow">Passport &amp; Atlas</span>
+            <span class="welcome-icon">&#9992;</span>
+            <h2>Where will your<br>passport take you?</h2>
+            <div class="passport-selector welcome-passport-selector">
+                <div class="select-wrapper">
+                    <input type="text"
+                           id="welcome-passport-search"
+                           class="passport-search-input"
+                           data-passport-search
+                           placeholder="Search country…"
+                           autocomplete="off"
+                           autocapitalize="off"
+                           spellcheck="false"
+                           role="combobox"
+                           aria-expanded="false"
+                           aria-controls="welcome-passport-dropdown"
+                           aria-autocomplete="list"
+                           aria-haspopup="listbox"
+                           aria-label="Search and select your passport country">
+                    <div id="welcome-passport-dropdown" class="dropdown-list" data-passport-dropdown role="listbox" aria-label="Passport countries"></div>
+                </div>
+            </div>
+            <p>199 passports. 199 destinations. Begin by selecting the passport you carry — the world will reveal itself across the map.</p>
+            <span class="welcome-divider"></span>
+        </div>
+    </div>
+
+    <!-- Data Source Disclaimer -->
+    <div id="data-source" class="hidden">
+        <span>Data from <a href="https://github.com/imorte/passport-index-data" target="_blank" rel="noopener noreferrer">Passport Index</a>. For reference only — always verify with official embassy sources before travel.</span>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin="anonymous"></script>
+    <script src="js/vendor/topojson-client.min.js" defer></script>
+    <script src="js/visa-data.js" defer></script>
+    <script src="js/country-facts.js" defer></script>
+    <script src="js/visa-data-loader.js" defer></script>
+    <script src="js/app.js" defer></script>
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Passport Visa Checker",
+        "description": "Interactive world map showing visa requirements for 199 passport countries worldwide.",
+        "applicationCategory": "TravelApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "browserRequirements": "Requires a modern web browser with JavaScript enabled"
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+name: Update Visa Data
+
+# Run weekly on Monday at 06:00 UTC, or manually
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+# Minimal permissions — only needs to push to this repo
+permissions:
+  contents: write
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run validator & updater
+        run: node scripts/validate-and-update-data.js
+
+      - name: Check for changes
+        id: diff
+        run: |
+          git diff --quiet data/ && echo "changed=false" >> "$GITHUB_OUTPUT" || echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push updated data
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/passport-index-validated.json data/data-meta.json
+          git commit -m "chore: update visa data (automated)
+
+          Validated and committed by GitHub Actions.
+          See data/data-meta.json for SHA-256 hash and metadata."
+          git push
+
+      - name: No changes detected
+        if: steps.diff.outputs.changed == 'false'
+        run: echo "No data changes detected — skipping commit."
