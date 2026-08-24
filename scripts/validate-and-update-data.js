@@ -35,7 +35,7 @@ const VALID_STATUSES = new Set([
 ]);
 
 // ── Helpers ─────────────────────────────────────────
-function fetchJSON(url) {
+function fetchOnce(url) {
     return new Promise((resolve, reject) => {
         const req = https.get(url, { timeout: 30000 }, (res) => {
             if (res.statusCode !== 200) {
@@ -75,6 +75,22 @@ function fetchJSON(url) {
             reject(new Error("Request timed out"));
         });
     });
+}
+
+// Retries transient failures (e.g. ECONNRESET from the CDN) with backoff,
+// since this script only runs weekly and a single blip would otherwise
+// leave the data stale for a full week.
+async function fetchJSON(url, retries = 3, backoffMs = 2000) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            return await fetchOnce(url);
+        } catch (err) {
+            if (attempt === retries) throw err;
+            console.error(`   ⚠ Attempt ${attempt}/${retries} failed: ${err.message} — retrying in ${backoffMs}ms`);
+            await new Promise((r) => setTimeout(r, backoffMs));
+            backoffMs *= 2;
+        }
+    }
 }
 
 function sha256(input) {
