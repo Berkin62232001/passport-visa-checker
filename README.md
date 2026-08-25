@@ -92,4 +92,4 @@ Then visit the localhost URL printed in Terminal.
 
 ## License
 
-MIT
+MIT © 2026 Berkin YILMAZ
