@@ -278,7 +278,8 @@ function escapeHTML(str) {
     if (typeof str !== "string") return "";
     const div = document.createElement("div");
     div.appendChild(document.createTextNode(str));
-    return div.innerHTML;
+    // Also escape quotes so the result is safe inside attribute values (title="…").
+    return div.innerHTML.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 // =====================================================
@@ -473,7 +474,7 @@ function renderCountryFacts(container, isoCode) {
         { label: "Region",   value: facts.region }
     ];
     container.innerHTML = cells.map(c => `
-        <div class="panel-fact">
+        <div class="panel-fact" title="${escapeHTML(c.label)}: ${escapeHTML(c.value || "—")}">
             <span class="panel-fact-label">${escapeHTML(c.label)}</span>
             <span class="panel-fact-value">${escapeHTML(c.value || "—")}</span>
         </div>
@@ -512,7 +513,7 @@ function renderPracticalStats(container, status, visaInfo) {
 
     container.classList.remove("hidden");
     container.innerHTML = cells.map(c => `
-        <div class="panel-stat">
+        <div class="panel-stat" title="${escapeHTML(c.label)}: ${escapeHTML(c.value)}">
             <span class="panel-stat-label">${escapeHTML(c.label)}</span>
             <span class="panel-stat-value">${escapeHTML(c.value)}</span>
         </div>
