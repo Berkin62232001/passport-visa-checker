@@ -71,11 +71,8 @@ function initMap() {
     // Place zoom controls top-right so they don't collide with the destination search (top-left).
     L.control.zoom({ position: "topright" }).addTo(map);
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-        subdomains: "abcd",
-        maxZoom: 19
-    }).addTo(map);
+    // No raster basemap: countries are drawn from the vendored TopoJSON on the dark
+    // map background. (CARTO basemaps now require an API key and watermark tiles without one.)
 
     loadGeoJSON();
 }
