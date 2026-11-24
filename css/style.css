@@ -617,11 +617,18 @@ body:has(#welcome-overlay:not(.hidden)) #legend {
     border: 1px solid var(--home-border);
 }
 
-/* === Panel Facts Strip — country reference data (5 cells) === */
+/* === Panel Facts Strip — country reference data (5 cells) ===
+   Laid out as a fixed 3-column grid (Capital · Language · Currency /
+   Time · Region) instead of 5 squeezed columns, so every value fits on a
+   single line at a fixed size. minmax(0, …) locks each column's width:
+   long values can never widen a cell or push text onto a new line. */
 .panel-facts {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 0;
+    /* Language gets the widest column (two-language values like
+       "Tetum/Portuguese"); Currency the narrowest. */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 0.9fr);
+    row-gap: 14px;
+    column-gap: 0;
     border-top: 1px solid var(--border-faint);
     border-bottom: 1px solid var(--border-faint);
     padding: 14px 0;
@@ -637,18 +644,27 @@ body:has(#welcome-overlay:not(.hidden)) #legend {
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
-    padding: 0 8px;
+    padding: 0 10px;
     border-right: 1px solid var(--border-faint);
     min-width: 0;
+    overflow: hidden;
 }
 
-.panel-fact:first-child {
+/* First cell of each row: flush left */
+.panel-fact:nth-child(3n + 1) {
     padding-left: 0;
 }
 
+/* Last cell of each row (and the final cell overall): no divider */
+.panel-fact:nth-child(3n),
 .panel-fact:last-child {
     border-right: none;
     padding-right: 0;
+}
+
+/* Region (5th cell) takes the remaining two-column space on row 2 */
+.panel-fact:nth-child(5):last-child {
+    grid-column: span 2;
 }
 
 .panel-fact-label {
@@ -658,25 +674,33 @@ body:has(#welcome-overlay:not(.hidden)) #legend {
     text-transform: uppercase;
     letter-spacing: 1.4px;
     color: var(--text-muted);
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
 }
 
+/* Fixed-size, single-line values: text never wraps or breaks mid-word
+   (e.g. "Ukrainia / n"). Anything wider than its cell is truncated with an
+   ellipsis; the full value is available via the cell's title tooltip. */
 .panel-fact-value {
+    display: block;
     font-family: var(--font-sans);
     font-size: 11px;
     color: var(--text-primary);
     font-weight: 500;
     letter-spacing: 0.1px;
     line-height: 1.3;
-    word-break: break-word;
-    hyphens: auto;
-    overflow-wrap: break-word;
     max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* === Panel Stats Strip — practical visa figures (3 cells) === */
 .panel-stats {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0;
     border-bottom: 1px solid var(--border-faint);
     padding: 16px 0 18px;
@@ -713,9 +737,17 @@ body:has(#welcome-overlay:not(.hidden)) #legend {
     text-transform: uppercase;
     letter-spacing: 1.6px;
     color: var(--text-muted);
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
 }
 
 .panel-stat-value {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-family: var(--font-display);
     font-size: 16px;
     color: var(--text-primary);
@@ -723,7 +755,6 @@ body:has(#welcome-overlay:not(.hidden)) #legend {
     letter-spacing: -0.2px;
     line-height: 1.15;
     max-width: 100%;
-    overflow-wrap: break-word;
     font-variant-numeric: tabular-nums;
 }
 
