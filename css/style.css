@@ -851,13 +851,18 @@ body:has(#welcome-overlay:not(.hidden)) #legend {
     position: relative;
     padding-bottom: 8px;
     border-bottom: 1px solid var(--border-faint);
+    text-align: center;
+    /* letter-spacing leaves a trailing gap after the last letter;
+       an equal left padding keeps the heading optically centered */
+    padding-left: 2px;
 }
 
 #panel-changes h3::after,
 #panel-tips h3::after {
     content: "";
     position: absolute;
-    left: 0;
+    left: 50%;
+    transform: translateX(-50%);
     bottom: -1px;
     width: 24px;
     height: 1px;
@@ -872,6 +877,7 @@ body:has(#welcome-overlay:not(.hidden)) #legend {
     color: var(--text-secondary);
     font-weight: 400;
     font-style: italic;
+    text-align: center;
 }
 
 #panel-ornament {
