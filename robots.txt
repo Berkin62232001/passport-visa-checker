@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
 
-# After deploying, replace YOUR-DOMAIN with the live host:
-# Sitemap: https://YOUR-DOMAIN/sitemap.xml
+Sitemap: https://berkin62232001.github.io/passport-visa-checker/sitemap.xml

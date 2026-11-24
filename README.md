@@ -15,7 +15,7 @@ Pick your passport and every destination lights up: visa-free, e-visa / visa on 
 ![No build](https://img.shields.io/badge/build-none-2b2620)
 [![License: MIT](https://img.shields.io/badge/license-MIT-6b8f71)](LICENSE)
 
-**Live demo:** _coming soon_
+### [▶ Open the live demo](https://berkin62232001.github.io/passport-visa-checker/)
 
 <br>
 

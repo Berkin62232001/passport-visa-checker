@@ -2,7 +2,7 @@
   "name": "Passport & Atlas",
   "short_name": "P&A",
   "description": "Interactive world map showing visa requirements for 199 passport countries.",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0F0D0A",
   "theme_color": "#0F0D0A",
@@ -31,5 +31,6 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "scope": "./"
 }
